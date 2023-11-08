@@ -28,6 +28,8 @@ public class EchoServer extends AbstractServer
   final public static int DEFAULT_PORT = 5555;
   
   ChatIF serverUI;
+
+  
   
   //Constructors ****************************************************
   
@@ -61,23 +63,26 @@ public class EchoServer extends AbstractServer
     (Object msg, ConnectionToClient client)
   {
 	  
-	  System.out.println("Message received: " + msg + " from " + client);
-	    this.sendToAllClients(msg);
-	    
-//	try {
-//		if (msg == null) {
-//			client.close();
-//		} else {
-//			System.out.println("Message received: " + msg + " from " + client);
-//		    this.sendToAllClients(msg);
-//		}
-//
-//	} catch (NullPointerException e) {
-//		clientDisconnected(client);
-//		
-//	} catch (IOException e) {
-//		
-//	}
+	  String message = (String) msg;
+	  String id = portString(message);
+	  
+	  if (message.startsWith("#login")) {
+		  if (client.getInfo("loginId") == null) {				// first time #login is received
+			  client.setInfo("loginId", id);
+			  System.out.println(message);
+		  } else {
+			  try {
+				client.sendToClient("Login Command cannot be used again! Terminating client session.");
+				client.close();
+			} catch (IOException e) {}
+		  }
+		  
+	  
+	  } else {
+		  System.out.println("Message received: " + message + " from " + client);
+		    this.sendToAllClients(client.getInfo("loginId") + ">" + message);
+	  }
+	 
 	    
   }
   
@@ -216,6 +221,7 @@ public class EchoServer extends AbstractServer
   protected void clientConnected(ConnectionToClient client) {
 	    System.out.println("Client " + client + " is connected.");
 	    this.sendToAllClients("Client " + client + " is connected.");
+	    
   }
 
   

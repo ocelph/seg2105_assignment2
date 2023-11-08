@@ -27,6 +27,8 @@ public class ChatClient extends AbstractClient
    * the display method in the client.
    */
   ChatIF clientUI; 
+  
+  String loginId;
 
   
   //Constructors ****************************************************
@@ -68,7 +70,7 @@ public class ChatClient extends AbstractClient
    * @param message The message from the UI.    
    */
   public void handleMessageFromClientUI(String message){
-	
+
 		if (message.startsWith("#")) {
 			if (message.trim().equals("#quit")) {
 				clientUI.display("Quiting session...");
@@ -116,11 +118,15 @@ public class ChatClient extends AbstractClient
 				if (!(isConnected())) {
 					try {
 						openConnection();
+						connectionEstablished();
 					} catch (Exception e) {
 						clientUI.display("Connection to server failed. Try again."); 
 					}
 				} else {
 					clientUI.display("You are already logged in!");
+					try {
+						sendToServer(message);
+					} catch (IOException e) {}
 				}	
 				
 				
@@ -187,6 +193,15 @@ public class ChatClient extends AbstractClient
     System.exit(0);
   }
   
+	public String getLoginId() {
+		return loginId;
+	}
+
+
+	public void setLoginId(String loginId) {
+		this.loginId = loginId;
+	}
+  
   
 //OCSF Overridden methods ************************************************
   
@@ -205,6 +220,17 @@ public class ChatClient extends AbstractClient
 	protected void connectionException(Exception exception) {
 		clientUI.display("Connection to server(host: " + getHost() + ", port: " + getPort() + ") has been severed. Terminating session");
 		System.exit(0);
+	}
+	
+	/**
+	 * Hook method called after a connection has been established. 
+	 */
+	protected void connectionEstablished() {
+		try {
+			String msg = "#login <" + loginId + ">";
+			sendToServer(msg);
+		} catch (IOException e) {
+		}
 	}
   
   

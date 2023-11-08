@@ -35,7 +35,6 @@ public class ClientConsole implements ChatIF
   ChatClient client;
   
   
-  
   /**
    * Scanner to read from the console
    */
@@ -50,18 +49,18 @@ public class ClientConsole implements ChatIF
    * @param host The host to connect to.
    * @param port The port to connect on.
    */
-  public ClientConsole(String host, int port) 
+  public ClientConsole(String loginId, String host, int port) 
   {
     try 
     {
       client= new ChatClient(host, port, this);
-      
+      client.setLoginId(loginId);
       
     } 
     catch(IOException exception) 
     {
       System.out.println("Error: Can't setup connection!"
-                + " Terminating client.");
+                + " Terminating client session.");
       System.exit(1);
     }
     
@@ -91,8 +90,7 @@ public class ClientConsole implements ChatIF
     } 
     catch (Exception ex) 
     {
-      System.out.println
-        ("Unexpected error while reading from console!");
+      System.out.println ("Unexpected error while reading from console!");
     }
   }
 
@@ -104,7 +102,7 @@ public class ClientConsole implements ChatIF
    */
   public void display(String message) 
   {
-    System.out.println("> " + message);
+    System.out.println(message);
   }
 
   
@@ -113,32 +111,46 @@ public class ClientConsole implements ChatIF
   /**
    * This method is responsible for the creation of the Client UI.
    *
-   * @param args[0] The host to connect to.
-   * @param args[1] The port to connect to.
+   * @param args[0] The loginID of client.
+   * @param args[1] The host to connect to.
+   * @param args[2] The port to connect to.
    */
   public static void main(String[] args){
-    String host = "";
+    String loginId = "";
+	String host = "";
     int port = 0 ; 
 
     // Catching command line arguments exception
+    
+    try{
+    	loginId = args[0];
+      } catch(ArrayIndexOutOfBoundsException e) {}
+    
+    if (loginId.trim().equals("")) {
+    	System.out.println("Client's login ID missing! Client quitting...");
+        System.exit(1);
+    } else {
+    	
+    }
 
     try{
-      host = args[0];
+      host = args[1];
     } catch(ArrayIndexOutOfBoundsException e){
       host = "localhost";
     }
     
     
     try {
-    	port = Integer.parseInt(args[1]);
+    	port = Integer.parseInt(args[2]);
     } catch(ArrayIndexOutOfBoundsException e) {
     	port = DEFAULT_PORT;
     } catch (NumberFormatException e) {
     	port = DEFAULT_PORT;
     }
     
-    ClientConsole chat= new ClientConsole(host, port);
+    ClientConsole chat= new ClientConsole(loginId,host, port);
     chat.accept();  //Wait for console data
+    
   }
 }
 //End of ConsoleChat class
