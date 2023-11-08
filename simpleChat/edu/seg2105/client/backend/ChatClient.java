@@ -67,19 +67,112 @@ public class ChatClient extends AbstractClient
    *
    * @param message The message from the UI.    
    */
-  public void handleMessageFromClientUI(String message)
-  {
-    try
-    {
-      sendToServer(message);
-    }
-    catch(IOException e)
-    {
-      clientUI.display
-        ("Could not send message to server.  Terminating client.");
-      quit();
-    }
+  public void handleMessageFromClientUI(String message){
+	
+		if (message.startsWith("#")) {
+			if (message.trim().equals("#quit")) {
+				clientUI.display("Quiting session...");
+				quit();
+				
+				
+				
+			} else if (message.trim().equals("#logoff")) {
+				try{
+			      closeConnection();
+			      clientUI.display("Logging off...");
+			    }
+			    catch(IOException e) {}
+				
+				
+				
+			} else if (message.trim().startsWith("#sethost")) {
+				if (!(isConnected())) {
+					String host = hostAndPortString(message.trim());
+					setHost(host);
+					clientUI.display("New host:" + getHost());  
+				} else {
+					clientUI.display("To change host you have to be logged off first. Do #logoff "); 
+				}
+				
+				
+				
+			} else if (message.trim().startsWith("#setport")) {
+				if (!(isConnected())) {
+					try {
+						int port = Integer.parseInt(hostAndPortString(message).trim());
+						setPort(port);
+						clientUI.display("New port: " + getPort());  
+					} catch (NumberFormatException e) {
+						clientUI.display("Port number has to made up of integers!");  
+					}
+					
+				} else {
+					clientUI.display("To change port you have to be logged off first. Do #logoff "); 
+				}
+				
+				
+				
+			} else if (message.trim().equals("#login")) {   // NOT WORKING??? after change of port or host
+				if (!(isConnected())) {
+					try {
+						openConnection();
+					} catch (Exception e) {
+						clientUI.display("Connection to server failed. Try again."); 
+					}
+				} else {
+					clientUI.display("You are already logged in!");
+				}	
+				
+				
+				
+			} else if (message.trim().equals("#gethost")) {
+				clientUI.display("Host: "+ getHost());
+			
+			
+				
+			} else if (message.trim().equals("#getport")) {
+				clientUI.display("Port: " + String.valueOf(getPort()) );
+			
+				
+			
+			} else {
+				clientUI.display("Command not recognised. Try again.");
+			}	
+			
+			
+		} else {
+			
+			try {
+		      sendToServer(message);
+		    } catch(IOException e) {
+		      clientUI.display("Could not send message to server.  Try again.");
+		    }
+			
+		}
+	
+	
+ 
   }
+  
+  
+  private String hostAndPortString (String message) {
+	  boolean valid = false;
+	  String hostOrPort = "" ;
+	  
+	  for (int i = 0 ; i < message.trim().length(); i ++) {
+		  if (message.charAt(i) == '>') {
+			  valid = false;
+		  }
+		  if (valid) {
+			  hostOrPort = hostOrPort + message.charAt(i);
+		  }
+		  if (message.charAt(i) == '<') {
+			  valid = true;
+		  }
+	  }
+	  return hostOrPort;
+  }
+  
   
   /**
    * This method terminates the client.
@@ -101,8 +194,7 @@ public class ChatClient extends AbstractClient
 	 * Hook method from OCSF called after the connection has been closed.
 	 */
 	protected void connectionClosed() {
-		clientUI.display("Connection to server(host: " + getHost() + ", port: " + getPort() + ") has been severed. Terminating session");
-		System.exit(0);
+		clientUI.display("Connection to server(host: " + getHost() + ", port: " + getPort() + ") has been severed.");
 	}
 
 	/**

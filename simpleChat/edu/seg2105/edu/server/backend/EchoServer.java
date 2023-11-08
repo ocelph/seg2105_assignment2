@@ -4,6 +4,9 @@ package edu.seg2105.edu.server.backend;
 // license found at www.lloseng.com 
 
 
+import java.io.IOException;
+
+import edu.seg2105.client.common.ChatIF;
 import ocsf.server.*;
 
 /**
@@ -24,6 +27,8 @@ public class EchoServer extends AbstractServer
    */
   final public static int DEFAULT_PORT = 5555;
   
+  ChatIF serverUI;
+  
   //Constructors ****************************************************
   
   /**
@@ -35,6 +40,13 @@ public class EchoServer extends AbstractServer
   {
     super(port);
   }
+  
+  public EchoServer(int port, ChatIF serverUI) 
+		    throws IOException 
+		  {
+		    super(port); //Call the superclass constructor
+		    this.serverUI = serverUI;
+		  }
 
   
   //Instance methods ************************************************
@@ -48,9 +60,127 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+	  
+	  System.out.println("Message received: " + msg + " from " + client);
+	    this.sendToAllClients(msg);
+	    
+//	try {
+//		if (msg == null) {
+//			client.close();
+//		} else {
+//			System.out.println("Message received: " + msg + " from " + client);
+//		    this.sendToAllClients(msg);
+//		}
+//
+//	} catch (NullPointerException e) {
+//		clientDisconnected(client);
+//		
+//	} catch (IOException e) {
+//		
+//	}
+	    
   }
+  
+  
+  /**
+   * This method handles all data coming from the UI            
+   *
+   * @param message The message from the UI.    
+   */
+  public void handleMessageFromServerUI(String message){
+	
+		if (message.startsWith("#")) {
+			if (message.trim().equals("#quit")) {
+				serverUI.display("Quiting...");
+				try{
+					close();
+					
+				} catch (IOException e) {}
+				System.exit(0);
+				
+			} else if (message.trim().equals("#stop")) {
+			      stopListening();
+			      serverUI.display("Stop listening for new clients...");
+				
+				
+			} else if (message.trim().equals("#close")) {
+				try{
+				  stopListening();
+			      close();
+			      serverUI.display("Disconnecting from all clients...");
+			    }
+			    catch(IOException e) {}
+				
+				
+			} else if (message.trim().startsWith("#setport")) {
+				if ( !(isListening()) && getNumberOfClients() ==0 ) {
+					try {
+						int port = Integer.parseInt(portString(message).trim());
+						setPort(port);
+						serverUI.display( "New port: " + String.valueOf(getPort()) );  
+					} catch (NumberFormatException e) {
+						serverUI.display("Port number has to made up of integers!");  
+					}
+					
+				} else {
+					serverUI.display("To change port server has to be closed first. Do #close "); 
+				}
+				
+				
+				
+			} else if (message.trim().equals("#start")) {   // NOT WORKING??? after change of port or host
+				if ( !(isListening()) ) {
+					try {
+						listen();
+					} catch (Exception e) {
+						serverUI.display("Listening  for new clients failed. Try again."); 
+					}
+				} else {
+					serverUI.display("Server is already listening!");
+				}	
+				
+				
+			} else if (message.trim().equals("#getport")) {
+				serverUI.display("Port: " + String.valueOf(getPort()) );
+			
+				
+			
+			} else {
+				serverUI.display("Command not recognised. Try again.");
+			}
+			
+			
+		} else {
+			
+				serverUI.display("SERVER MSG> " + message);
+				this.sendToAllClients("SERVER MSG> " + message);	
+		}
+ 
+  }
+  
+  
+  private String portString (String message) {
+	  boolean valid = false;
+	  String port = "" ;
+	  
+	  for (int i = 0 ; i < message.trim().length(); i ++) {
+		  if (message.charAt(i) == '>') {
+			  valid = false;
+		  }
+		  if (valid) {
+			  port = port + message.charAt(i);
+		  }
+		  if (message.charAt(i) == '<') {
+			  valid = true;
+		  }
+	  }
+	  return port;
+  }
+  
+  
+  
+  
+  
     
   /**
    * This method overrides the one in the superclass.  Called
@@ -96,7 +226,7 @@ public class EchoServer extends AbstractServer
    */
   synchronized protected void clientDisconnected(ConnectionToClient client) {
 	  System.out.println("Client " + client + " has disconnected.");
-	  this.sendToAllClients("Client " + client + " has connected.");
+	  this.sendToAllClients("Client " + client + " has disconnected.");
   }
 
   
@@ -108,8 +238,8 @@ public class EchoServer extends AbstractServer
    * @param Throwable the exception thrown.
    */
   synchronized protected void clientException(ConnectionToClient client, Throwable exception) {
-	  System.out.println("A client has unexpectedly disconnected.");
-	  this.sendToAllClients("A client has unexpectedly disconnected.");
+	  System.out.println("Client disconnected.");
+	  this.sendToAllClients("Client disconnected.");
   }
   
   
