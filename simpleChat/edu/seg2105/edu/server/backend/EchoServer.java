@@ -79,8 +79,8 @@ public class EchoServer extends AbstractServer
 		  
 	  
 	  } else {
-		  System.out.println("Message received: " + message + " from " + client);
-		    this.sendToAllClients(client.getInfo("loginId") + ">" + message);
+		  System.out.println("Message received: " + message + " from <" + client.getInfo("loginId") + ">");
+		  this.sendToAllClients(client.getInfo("loginId") + ">" + message);
 	  }
 	 
 	    
@@ -219,7 +219,7 @@ public class EchoServer extends AbstractServer
    * @param client the connection connected to the client.
    */
   protected void clientConnected(ConnectionToClient client) {
-	    System.out.println("Client " + client + " is connected.");
+	    System.out.println("A new client has connected to the server.");
 	    this.sendToAllClients("Client " + client + " is connected.");
 	    
   }
@@ -231,7 +231,7 @@ public class EchoServer extends AbstractServer
    * @param client the connection with the client.
    */
   synchronized protected void clientDisconnected(ConnectionToClient client) {
-	  System.out.println("Client " + client + " has disconnected.");
+	  System.out.println("Client <" + client.getInfo("loginId") + "> has disconnected.");
 	  this.sendToAllClients("Client " + client + " has disconnected.");
   }
 
@@ -244,8 +244,8 @@ public class EchoServer extends AbstractServer
    * @param Throwable the exception thrown.
    */
   synchronized protected void clientException(ConnectionToClient client, Throwable exception) {
-	  System.out.println("Client disconnected.");
-	  this.sendToAllClients("Client disconnected.");
+	  System.out.println("A client has disconnected from the server.");
+	  this.sendToAllClients("A client has disconnected from the server.");
   }
   
   

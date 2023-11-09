@@ -74,7 +74,7 @@ public class ChatClient extends AbstractClient
 		if (message.startsWith("#")) {
 			if (message.trim().equals("#quit")) {
 				clientUI.display("Quiting session...");
-				quit();
+				System.exit(0);
 				
 				
 				
@@ -105,7 +105,7 @@ public class ChatClient extends AbstractClient
 						setPort(port);
 						clientUI.display("New port: " + getPort());  
 					} catch (NumberFormatException e) {
-						clientUI.display("Port number has to made up of integers!");  
+						clientUI.display("Port number has to made up of integers & has to be between <>!");  
 					}
 					
 				} else {
@@ -218,7 +218,7 @@ public class ChatClient extends AbstractClient
 	 * @param exception : the exception raised.
 	 */
 	protected void connectionException(Exception exception) {
-		clientUI.display("Connection to server(host: " + getHost() + ", port: " + getPort() + ") has been severed. Terminating session");
+		clientUI.display("The server has shut down.");
 		System.exit(0);
 	}
 	
@@ -227,7 +227,7 @@ public class ChatClient extends AbstractClient
 	 */
 	protected void connectionEstablished() {
 		try {
-			String msg = "#login <" + loginId + ">";
+			String msg = "#login <" + loginId + "> has logged on";
 			sendToServer(msg);
 		} catch (IOException e) {
 		}
